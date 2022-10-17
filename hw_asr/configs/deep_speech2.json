@@ -1,6 +1,6 @@
 {
-  "name": "torch_deep_speech",
-  "n_gpu": 1,
+  "name": "deep_speech2",
+  "n_gpu": 2,
   "preprocessing": {
     "sr": 16000,
     "spectrogram": {
@@ -10,23 +10,24 @@
     "log_spec": true
   },
   "augmentations": {
-    "wave": [
-
-    ],
+    "wave": [],
     "spectrogram": []
   },
   "arch": {
-    "type": "TorchDeepSpeech",
+    "type": "DeepSpeech2",
     "args": {
       "n_feats": 128,
-      "n_hidden": 1024,
-      "dropout": 0
+      "n_cnn_layers": 5,
+      "n_rnn_layers": 5,
+      "rnn_dim": 1024,
+      "stride": 2,
+      "dropout": 0.1
     }
   },
   "data": {
     "train": {
       "batch_size": 16,
-      "num_workers": 16,
+      "num_workers": 8,
       "pin_memory": true,
       "datasets": [
         {
@@ -36,18 +37,41 @@
             "max_audio_length": 20.0,
             "max_text_length": 200
           }
+        },
+        {
+          "type": "LJspeechDataset",
+          "args": {
+            "part": "dataset",
+            "max_audio_length": 20.0,
+            "max_text_length": 200
+          }
         }
       ]
     },
-    "val": {
+    "test_clean": {
       "batch_size": 16,
-      "num_workers": 16,
+      "num_workers": 8,
       "pin_memory": true,
       "datasets": [
         {
           "type": "LibrispeechDataset",
           "args": {
             "part": "test-clean",
+            "max_audio_length": 20.0,
+            "max_text_length": 200
+          }
+        }
+      ]
+    },
+    "test_other": {
+      "batch_size": 16,
+      "num_workers": 8,
+      "pin_memory": true,
+      "datasets": [
+        {
+          "type": "LibrispeechDataset",
+          "args": {
+            "part": "test-other",
             "max_audio_length": 20.0,
             "max_text_length": 200
           }
@@ -83,14 +107,13 @@
     "type": "OneCycleLR",
     "args": {
       "steps_per_epoch": 100,
-      "epochs": 50,
+      "epochs": 100,
       "anneal_strategy": "cos",
-      "max_lr": 5e-4,
-      "pct_start": 0.01
+      "max_lr": 5e-4
     }
   },
   "trainer": {
-    "epochs": 50,
+    "epochs": 100,
     "save_dir": "saved/",
     "save_period": 5,
     "verbosity": 2,

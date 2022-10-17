@@ -26,11 +26,12 @@ def collate_fn(dataset_items: List[dict]):
         for key, value in item.items():
             if key in keys_to_pad:
                 pad_width = (0, lengths[key] - item[key].shape[-1])
-                value = torch.nn.functional.pad(value, pad_width, "constant", 0)
                 result_item[f"{key}_length"] = value.shape[-1]
+                value = torch.nn.functional.pad(value, pad_width, "constant", 0)
             if key in keys_to_squeeze:
                 value = value.squeeze(0)
             result_item[key] = value
         padded_items.append(result_item)
 
-    return default_collate(padded_items)
+    result = default_collate(padded_items)
+    return result

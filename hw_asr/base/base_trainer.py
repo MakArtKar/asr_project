@@ -18,6 +18,10 @@ class BaseTrainer:
         self.logger = config.get_logger("trainer", config["trainer"]["verbosity"])
 
         self.model = model
+        if config["n_gpu"] > 1:
+            self.model_module = self.model.module
+        else:
+            self.model_module = self.model
         self.criterion = criterion
         self.metrics = metrics
         self.optimizer = optimizer
@@ -136,11 +140,11 @@ class BaseTrainer:
         :param epoch: current epoch number
         :param save_best: if True, rename the saved checkpoint to 'model_best.pth'
         """
-        arch = type(self.model).__name__
+        arch = type(self.model_module).__name__
         state = {
             "arch": arch,
             "epoch": epoch,
-            "state_dict": self.model.state_dict(),
+            "state_dict": self.model_module.state_dict(),
             "optimizer": self.optimizer.state_dict(),
             "monitor_best": self.mnt_best,
             "config": self.config,
@@ -172,7 +176,7 @@ class BaseTrainer:
                 "Warning: Architecture configuration given in config file is different from that "
                 "of checkpoint. This may yield an exception while state_dict is being loaded."
             )
-        self.model.load_state_dict(checkpoint["state_dict"])
+        self.model_module.load_state_dict(checkpoint["state_dict"])
 
         # load optimizer state from checkpoint only when optimizer type is not changed.
         if (
