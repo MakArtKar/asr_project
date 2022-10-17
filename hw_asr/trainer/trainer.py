@@ -12,6 +12,7 @@ from tqdm import tqdm
 
 from hw_asr.base import BaseTrainer
 from hw_asr.base.base_text_encoder import BaseTextEncoder
+from hw_asr.text_encoder import CTCCharTextEncoder
 from hw_asr.logger.utils import plot_spectrogram_to_buf
 from hw_asr.metric.utils import calc_cer, calc_wer
 from hw_asr.utils import inf_loop, MetricTracker
@@ -114,7 +115,7 @@ class Trainer(BaseTrainer):
                 self.writer.add_scalar(
                     "learning rate", self.lr_scheduler.get_last_lr()[0]
                 )
-                self._log_predictions(**batch)
+                self._log_predictions(**batch, iter=batch_idx)
                 self._log_spectrogram(batch["spectrogram"])
                 self._log_audio(batch["audio"])
                 self._log_scalars(self.train_metrics)
@@ -181,7 +182,7 @@ class Trainer(BaseTrainer):
                 )
             self.writer.set_step(epoch * self.len_epoch, part)
             self._log_scalars(self.evaluation_metrics)
-            self._log_predictions(**batch)
+            self._log_predictions(**batch, iter=0)
             self._log_spectrogram(batch["spectrogram"])
             self._log_audio(batch["audio"])
 
@@ -206,11 +207,11 @@ class Trainer(BaseTrainer):
             log_probs,
             log_probs_length,
             audio_path,
+            iter,
             examples_to_log=10,
             *args,
             **kwargs,
     ):
-        # TODO: implement logging of beam search results
         if self.writer is None:
             return
         argmax_inds = log_probs.cpu().argmax(-1).numpy()
@@ -220,10 +221,17 @@ class Trainer(BaseTrainer):
         ]
         argmax_texts_raw = [self.text_encoder.decode(inds) for inds in argmax_inds]
         argmax_texts = [self.text_encoder.ctc_decode(inds) for inds in argmax_inds]
-        tuples = list(zip(argmax_texts, text, argmax_texts_raw, audio_path))
+        beam_search_texts = [None] * len(log_probs)
+        if isinstance(self.text_encoder, CTCCharTextEncoder) and iter % self.len_epoch == 0:
+            beam_search_texts = [
+                self.text_encoder.ctc_beam_search(torch.exp(log_probs_item), log_probs_length_item, beam_size=3)
+                for log_probs_item, log_probs_length_item in zip(log_probs, log_probs_length)
+            ]
+
+        tuples = list(zip(argmax_texts, text, argmax_texts_raw, beam_search_texts, audio_path))
         shuffle(tuples)
         rows = {}
-        for pred, target, raw_pred, audio_path in tuples[:examples_to_log]:
+        for pred, target, raw_pred, beam_search, audio_path in tuples[:examples_to_log]:
             target = BaseTextEncoder.normalize_text(target)
             wer = calc_wer(target, pred) * 100
             cer = calc_cer(target, pred) * 100
@@ -232,6 +240,7 @@ class Trainer(BaseTrainer):
                 "target": target,
                 "raw prediction": raw_pred,
                 "predictions": pred,
+                "beam_search": beam_search,
                 "wer": wer,
                 "cer": cer,
             }
