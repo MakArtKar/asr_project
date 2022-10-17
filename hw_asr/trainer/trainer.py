@@ -54,10 +54,10 @@ class Trainer(BaseTrainer):
         self.log_step = 50
 
         self.train_metrics = MetricTracker(
-            "loss", "grad norm", *[m.name for m in self.metrics], writer=self.writer
+            "loss", "grad norm", *[m.name for m in self.metrics if m.train], writer=self.writer
         )
         self.evaluation_metrics = MetricTracker(
-            "loss", *[m.name for m in self.metrics], writer=self.writer
+            "loss", *[m.name for m in self.metrics if m.eval], writer=self.writer
         )
 
     @staticmethod
@@ -115,7 +115,7 @@ class Trainer(BaseTrainer):
                 self.writer.add_scalar(
                     "learning rate", self.lr_scheduler.get_last_lr()[0]
                 )
-                self._log_predictions(**batch, iter=batch_idx)
+                self._log_predictions(**batch)
                 self._log_spectrogram(batch["spectrogram"])
                 self._log_audio(batch["audio"])
                 self._log_scalars(self.train_metrics)
@@ -157,7 +157,9 @@ class Trainer(BaseTrainer):
 
         metrics.update("loss", batch["loss"].item())
         for met in self.metrics:
-            metrics.update(met.name, met(**batch))
+            if is_train and met.name in self.train_metrics.keys() or \
+                    not is_train and met.name in self.evaluation_metrics.keys():
+                metrics.update(met.name, met(**batch))
         return batch
 
     def _evaluation_epoch(self, epoch, part, dataloader):
@@ -182,7 +184,7 @@ class Trainer(BaseTrainer):
                 )
             self.writer.set_step(epoch * self.len_epoch, part)
             self._log_scalars(self.evaluation_metrics)
-            self._log_predictions(**batch, iter=0)
+            self._log_predictions(**batch)
             self._log_spectrogram(batch["spectrogram"])
             self._log_audio(batch["audio"])
 
@@ -207,14 +209,18 @@ class Trainer(BaseTrainer):
             log_probs,
             log_probs_length,
             audio_path,
-            iter,
             examples_to_log=10,
             *args,
             **kwargs,
     ):
         if self.writer is None:
             return
-        argmax_inds = log_probs.cpu().argmax(-1).numpy()
+        text = text[:examples_to_log]
+        log_probs = log_probs[:examples_to_log].cpu().detach().numpy()
+        log_probs_length = log_probs_length[:examples_to_log]
+        audio_path = audio_path[:examples_to_log]
+
+        argmax_inds = log_probs.argmax(-1)
         argmax_inds = [
             inds[: int(ind_len)]
             for inds, ind_len in zip(argmax_inds, log_probs_length.numpy())
@@ -222,16 +228,17 @@ class Trainer(BaseTrainer):
         argmax_texts_raw = [self.text_encoder.decode(inds) for inds in argmax_inds]
         argmax_texts = [self.text_encoder.ctc_decode(inds) for inds in argmax_inds]
         beam_search_texts = [None] * len(log_probs)
-        if isinstance(self.text_encoder, CTCCharTextEncoder) and iter % self.len_epoch == 0:
+        if isinstance(self.text_encoder, CTCCharTextEncoder):
             beam_search_texts = [
-                self.text_encoder.ctc_beam_search(torch.exp(log_probs_item), log_probs_length_item, beam_size=3)
-                for log_probs_item, log_probs_length_item in zip(log_probs, log_probs_length)
+                self.text_encoder.ctc_beam_search(log_probs_item, probs_length_item, beam_size=20)
+                for log_probs_item, probs_length_item in zip(log_probs, log_probs_length)
             ]
 
         tuples = list(zip(argmax_texts, text, argmax_texts_raw, beam_search_texts, audio_path))
         shuffle(tuples)
         rows = {}
-        for pred, target, raw_pred, beam_search, audio_path in tuples[:examples_to_log]:
+        beam_search_rows = {}
+        for pred, target, raw_pred, beam_search, audio_path in tuples:
             target = BaseTextEncoder.normalize_text(target)
             wer = calc_wer(target, pred) * 100
             cer = calc_cer(target, pred) * 100
@@ -240,11 +247,20 @@ class Trainer(BaseTrainer):
                 "target": target,
                 "raw prediction": raw_pred,
                 "predictions": pred,
-                "beam_search": beam_search,
                 "wer": wer,
                 "cer": cer,
             }
+            if beam_search is not None:
+                beam_search_rows[Path(audio_path).name] = {
+                    "target": target
+                }
+                for i, variant in enumerate(beam_search[:8]):
+                    beam_search_rows[Path(audio_path).name].update({
+                        f"beam_search_{i}": variant.text
+                    })
         self.writer.add_table("predictions", pd.DataFrame.from_dict(rows, orient="index"))
+        if isinstance(self.text_encoder, CTCCharTextEncoder):
+            self.writer.add_table("beam_search", pd.DataFrame.from_dict(beam_search_rows, orient="index"))
 
     def _log_spectrogram(self, spectrogram_batch):
         spectrogram = random.choice(spectrogram_batch.cpu())

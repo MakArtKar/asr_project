@@ -1,6 +1,10 @@
 {
   "name": "torch_deep_speech",
   "n_gpu": 1,
+  "text_encoder": {
+    "type": "CTCLMCharTextEncoder",
+    "args": {}
+  },
   "preprocessing": {
     "sr": 16000,
     "spectrogram": {
@@ -67,15 +71,33 @@
   },
   "metrics": [
     {
-      "type": "ArgmaxWERMetric",
+      "type": "ArgmaxCERMetric",
       "args": {
-        "name": "WER (argmax)"
+        "name": "CER (argmax)",
+        "train": true,
+        "eval": true
       }
     },
     {
-      "type": "ArgmaxCERMetric",
+      "type": "ArgmaxWERMetric",
       "args": {
-        "name": "CER (argmax)"
+        "name": "WER (argmax)",
+        "train": true,
+        "eval": true
+      }
+    },
+    {
+      "type": "LMCerMetric",
+      "args": {
+        "name": "CER (LM)",
+        "eval": true
+      }
+    },
+    {
+      "type": "LMWerMetric",
+      "args": {
+        "name": "WER (LM)",
+        "eval": true
       }
     }
   ],

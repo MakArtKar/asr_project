@@ -10,6 +10,10 @@
     },
     "log_spec": true
   },
+  "text_encoder": {
+    "type": "CTCLMCharTextEncoder",
+    "args": {}
+  },
   "augmentations": {
     "wave": [],
     "spectrogram": []
@@ -65,15 +69,33 @@
   },
   "metrics": [
     {
-      "type": "ArgmaxWERMetric",
+      "type": "ArgmaxCERMetric",
       "args": {
-        "name": "WER (argmax)"
+        "name": "CER (argmax)",
+        "train": true,
+        "eval": true
       }
     },
     {
-      "type": "ArgmaxCERMetric",
+      "type": "ArgmaxWERMetric",
       "args": {
-        "name": "CER (argmax)"
+        "name": "WER (argmax)",
+        "train": true,
+        "eval": true
+      }
+    },
+    {
+      "type": "LMCerMetric",
+      "args": {
+        "name": "CER (LM)",
+        "eval": true
+      }
+    },
+    {
+      "type": "LMWerMetric",
+      "args": {
+        "name": "WER (LM)",
+        "eval": true
       }
     }
   ],
@@ -84,7 +106,7 @@
       "epochs": 50,
       "anneal_strategy": "cos",
       "max_lr": 1e-2,
-      "pct_start": 0.2
+      "pct_start": 0.01
     }
   },
   "trainer": {

@@ -1,6 +1,10 @@
 {
   "name": "deep_speech2",
   "n_gpu": 2,
+  "text_encoder": {
+    "type": "CTCLMCharTextEncoder",
+    "args": {}
+  },
   "preprocessing": {
     "sr": 16000,
     "spectrogram": {
@@ -10,7 +14,52 @@
     "log_spec": true
   },
   "augmentations": {
-    "wave": [],
+    "wave": [
+      {
+        "type": "Gain",
+        "args": {
+          "sample_rate": 16000,
+          "p": 0.2,
+          "min_gain_in_db": -15.0,
+          "max_gain_in_db": 5.0
+        }
+      },
+      {
+        "type": "PolarityInversion",
+        "args": {
+          "sample_rate": 16000,
+          "p": 0.2
+        }
+      },
+      {
+        "type": "AddColoredNoise",
+        "args": {
+          "sample_rate": 16000,
+          "p": 0.2
+        }
+      },
+      {
+        "type": "ShuffleChannels",
+        "args": {
+          "sample_rate": 16000,
+          "p": 0.2
+        }
+      },
+      {
+        "type": "Shift",
+        "args": {
+          "sample_rate": 16000,
+          "p": 0.2
+        }
+      },
+      {
+        "type": "PitchShift",
+        "args": {
+          "sample_rate": 16000,
+          "p": 0.2
+        }
+      }
+    ],
     "spectrogram": []
   },
   "arch": {
@@ -91,15 +140,33 @@
   },
   "metrics": [
     {
-      "type": "ArgmaxWERMetric",
+      "type": "ArgmaxCERMetric",
       "args": {
-        "name": "WER (argmax)"
+        "name": "CER (argmax)",
+        "train": true,
+        "eval": true
       }
     },
     {
-      "type": "ArgmaxCERMetric",
+      "type": "ArgmaxWERMetric",
       "args": {
-        "name": "CER (argmax)"
+        "name": "WER (argmax)",
+        "train": true,
+        "eval": true
+      }
+    },
+    {
+      "type": "LMCerMetric",
+      "args": {
+        "name": "CER (LM)",
+        "eval": true
+      }
+    },
+    {
+      "type": "LMWerMetric",
+      "args": {
+        "name": "WER (LM)",
+        "eval": true
       }
     }
   ],
@@ -107,7 +174,7 @@
     "type": "OneCycleLR",
     "args": {
       "steps_per_epoch": 100,
-      "epochs": 100,
+      "epochs": 101,
       "anneal_strategy": "cos",
       "max_lr": 5e-4
     }

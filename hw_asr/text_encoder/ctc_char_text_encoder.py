@@ -1,6 +1,7 @@
 from collections import defaultdict
 from typing import List, NamedTuple, Iterator, Tuple
 
+import numpy as np
 import torch
 
 from .char_text_encoder import CharTextEncoder
@@ -75,12 +76,12 @@ class CTCCharTextEncoder(CharTextEncoder):
 
         return new_hypos
 
-    def ctc_beam_search(self, probs: torch.Tensor, probs_length,
-                        beam_size: int = 100) -> List[Hypothesis]:
+    def ctc_beam_search(self, log_probs: np.ndarray, probs_length: int,
+                        beam_size: int = 20) -> List[Hypothesis]:
         """
         Performs beam search and returns a list of pairs (hypothesis, hypothesis probability).
         """
-        probs = probs[:probs_length]
+        probs = np.exp(log_probs)[:probs_length]
         assert len(probs.shape) == 2
         char_length, voc_size = probs.shape
         assert voc_size == len(self.ind2char)
