@@ -66,16 +66,16 @@
     "type": "DeepSpeech2",
     "args": {
       "n_feats": 128,
-      "n_cnn_layers": 5,
-      "n_rnn_layers": 5,
+      "n_cnn_layers": 10,
+      "n_rnn_layers": 10,
       "rnn_dim": 1024,
       "stride": 2,
-      "dropout": 0.1
+      "dropout": 0.2
     }
   },
   "data": {
     "train": {
-      "batch_size": 4,
+      "batch_size": 8,
       "num_workers": 16,
       "pin_memory": true,
       "datasets": [
@@ -98,7 +98,7 @@
       ]
     },
     "test_clean": {
-      "batch_size": 4,
+      "batch_size": 8,
       "num_workers": 16,
       "pin_memory": true,
       "datasets": [
@@ -113,7 +113,7 @@
       ]
     },
     "test_other": {
-      "batch_size": 4,
+      "batch_size": 8,
       "num_workers": 16,
       "pin_memory": true,
       "datasets": [
