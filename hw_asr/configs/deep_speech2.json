@@ -99,7 +99,6 @@
     },
     "test_clean": {
       "batch_size": 4,
-      "batch_size": 4,
       "num_workers": 16,
       "pin_memory": true,
       "datasets": [
@@ -176,7 +175,7 @@
   "lr_scheduler": {
     "type": "OneCycleLR",
     "args": {
-      "steps_per_epoch": 30,
+      "steps_per_epoch": 20000,
       "epochs": 50,
       "anneal_strategy": "cos",
       "max_lr": 5e-4

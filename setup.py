@@ -1,12 +1,18 @@
 import os
 
 
+links = {
+    "librispeech vocab": "https://us.openslr.org/resources/11/librispeech-vocab.txt",
+    "LM": "https://us.openslr.org/resources/11/3-gram.pruned.1e-7.arpa.gz",
+}
+
+
 def main():
     os.makedirs("./data/datasets/librispeech", exist_ok=True)
-    os.system("wget https://us.openslr.org/resources/11/librispeech-vocab.txt -P ./data/datasets/librispeech")
+    os.system(f"wget {links['librispeech vocab']} -P ./data/datasets/librispeech")
 
     os.makedirs("./data/decoders/", exist_ok=True)
-    os.system("wget https://us.openslr.org/resources/11/3-gram.pruned.1e-7.arpa.gz -P ./data/decoders")
+    os.system(f"wget {'LM'} -P ./data/decoders")
     os.system("gzip -d ./data/decoders/3-gram.pruned.1e-7.arpa.gz")
 
     with open("./data/decoders/3-gram.pruned.1e-7.arpa", "r") as f_in, \
