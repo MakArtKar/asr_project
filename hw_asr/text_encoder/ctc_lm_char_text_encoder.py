@@ -1,7 +1,6 @@
 from typing import List
 
 import numpy as np
-import torch
 from pyctcdecode import build_ctcdecoder
 
 from hw_asr.text_encoder import CTCCharTextEncoder

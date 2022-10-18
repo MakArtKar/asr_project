@@ -230,7 +230,7 @@ class Trainer(BaseTrainer):
         beam_search_texts = [None] * len(log_probs)
         if isinstance(self.text_encoder, CTCCharTextEncoder):
             beam_search_texts = [
-                self.text_encoder.ctc_beam_search(log_probs_item, probs_length_item, beam_size=100)
+                self.text_encoder.ctc_beam_search(log_probs_item, probs_length_item, beam_size=20)
                 for log_probs_item, probs_length_item in zip(log_probs, log_probs_length)
             ]
 

@@ -3,9 +3,8 @@ from typing import List
 import torch
 from torch import Tensor
 
-from hw_asr.base.base_metric import BaseMetric
+from hw_asr.base.base_metric import BaseMetric, BaseTextMetric, BaseLMMetric
 from hw_asr.base.base_text_encoder import BaseTextEncoder
-from hw_asr.text_encoder import CTCLMCharTextEncoder
 from hw_asr.metric.utils import calc_cer
 
 
@@ -28,17 +27,7 @@ class ArgmaxCERMetric(BaseMetric):
         return sum(cers) / len(cers)
 
 
-class LMCerMetric(BaseMetric):
-    def __init__(self, text_encoder: CTCLMCharTextEncoder, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.decoder = text_encoder.decoder
-
-    def __call__(self, log_probs: Tensor, log_probs_length: Tensor, text: List[str], beam_size: int = 100, **kwargs):
-        cers = []
-        probs = torch.exp(log_probs).cpu().detach().numpy()
-        lengths = log_probs_length.cpu().detach().numpy()
-        for log_prob_vec, length, target_text in zip(probs, lengths, text):
-            target_text = BaseTextEncoder.normalize_text(target_text)
-            pred_text = self.decoder.decode(log_prob_vec[:length], beam_width=beam_size)
-            cers.append(calc_cer(target_text, pred_text))
-        return sum(cers) / len(cers)
+class LMCerMetric(BaseLMMetric):
+    def calc_metric(self, predicted_text: str, target_text: str) -> float:
+        target_text = BaseTextEncoder.normalize_text(target_text)
+        return calc_cer(predicted_text, target_text)

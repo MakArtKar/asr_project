@@ -75,7 +75,7 @@
   },
   "data": {
     "train": {
-      "batch_size": 16,
+      "batch_size": 8,
       "num_workers": 8,
       "pin_memory": true,
       "datasets": [
@@ -98,7 +98,7 @@
       ]
     },
     "test_clean": {
-      "batch_size": 16,
+      "batch_size": 8,
       "num_workers": 8,
       "pin_memory": true,
       "datasets": [
@@ -113,7 +113,7 @@
       ]
     },
     "test_other": {
-      "batch_size": 16,
+      "batch_size": 8,
       "num_workers": 8,
       "pin_memory": true,
       "datasets": [
@@ -159,21 +159,23 @@
       "type": "LMCerMetric",
       "args": {
         "name": "CER (LM)",
-        "eval": true
+        "eval": true,
+        "n_jobs": 8
       }
     },
     {
       "type": "LMWerMetric",
       "args": {
         "name": "WER (LM)",
-        "eval": true
+        "eval": true,
+        "n_jobs": 8
       }
     }
   ],
   "lr_scheduler": {
     "type": "OneCycleLR",
     "args": {
-      "steps_per_epoch": 32,
+      "steps_per_epoch": 1,
       "epochs": 7,
       "anneal_strategy": "cos",
       "max_lr": 5e-4
@@ -188,7 +190,7 @@
     "early_stop": 100,
     "visualize": "wandb",
     "wandb_project": "asr_project",
-    "len_epoch": 32,
+    "len_epoch": 1,
     "grad_norm_clip": 10
   }
 }

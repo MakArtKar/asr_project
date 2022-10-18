@@ -1,9 +1,11 @@
-from typing import List
+import multiprocessing
+from typing import List, Optional
 
+import numpy as np
 import torch
 from torch import Tensor
 
-from hw_asr.base.base_metric import BaseMetric
+from hw_asr.base.base_metric import BaseMetric, BaseTextMetric, BaseLMMetric
 from hw_asr.base.base_text_encoder import BaseTextEncoder
 from hw_asr.metric.utils import calc_wer
 from hw_asr.text_encoder import CTCLMCharTextEncoder
@@ -28,17 +30,7 @@ class ArgmaxWERMetric(BaseMetric):
         return sum(wers) / len(wers)
 
 
-class LMWerMetric(BaseMetric):
-    def __init__(self, text_encoder: CTCLMCharTextEncoder, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.decoder = text_encoder.decoder
-
-    def __call__(self, log_probs: Tensor, log_probs_length: Tensor, text: List[str], beam_size: int = 100, **kwargs):
-        wers = []
-        probs = torch.exp(log_probs).cpu().detach().numpy()
-        lengths = log_probs_length.cpu().detach().numpy()
-        for log_prob_vec, length, target_text in zip(probs, lengths, text):
-            target_text = BaseTextEncoder.normalize_text(target_text)
-            pred_text = self.decoder.decode(log_prob_vec[:length], beam_width=beam_size)
-            wers.append(calc_wer(target_text, pred_text))
-        return sum(wers) / len(wers)
+class LMWerMetric(BaseLMMetric):
+    def calc_metric(self, predicted_text: str, target_text: str) -> float:
+        target_text = BaseTextEncoder.normalize_text(target_text)
+        return calc_wer(predicted_text, target_text)
