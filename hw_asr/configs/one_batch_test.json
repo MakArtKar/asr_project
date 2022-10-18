@@ -102,8 +102,8 @@
   "lr_scheduler": {
     "type": "OneCycleLR",
     "args": {
-      "steps_per_epoch": 100,
-      "epochs": 50,
+      "steps_per_epoch": 500,
+      "epochs": 51,
       "anneal_strategy": "cos",
       "max_lr": 1e-2,
       "pct_start": 0.01
@@ -118,7 +118,7 @@
     "early_stop": 100,
     "visualize": "wandb",
     "wandb_project": "asr_project",
-    "len_epoch": 100,
+    "len_epoch": 500,
     "grad_norm_clip": 10
   }
 }

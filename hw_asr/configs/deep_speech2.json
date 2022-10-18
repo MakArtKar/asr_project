@@ -28,7 +28,7 @@
         "type": "PolarityInversion",
         "args": {
           "sample_rate": 16000,
-          "p": 0.2
+          "p": 0.1
         }
       },
       {
@@ -42,7 +42,7 @@
         "type": "ShuffleChannels",
         "args": {
           "sample_rate": 16000,
-          "p": 0.2
+          "p": 0.1
         }
       },
       {
@@ -56,7 +56,7 @@
         "type": "PitchShift",
         "args": {
           "sample_rate": 16000,
-          "p": 0.2
+          "p": 0.1
         }
       }
     ],
@@ -173,22 +173,22 @@
   "lr_scheduler": {
     "type": "OneCycleLR",
     "args": {
-      "steps_per_epoch": 100,
-      "epochs": 101,
+      "steps_per_epoch": 32,
+      "epochs": 7,
       "anneal_strategy": "cos",
       "max_lr": 5e-4
     }
   },
   "trainer": {
-    "epochs": 100,
+    "epochs": 6,
     "save_dir": "saved/",
     "save_period": 5,
     "verbosity": 2,
-    "monitor": "min val_loss",
+    "monitor": "min loss_test_other",
     "early_stop": 100,
     "visualize": "wandb",
     "wandb_project": "asr_project",
-    "len_epoch": 100,
+    "len_epoch": 32,
     "grad_norm_clip": 10
   }
 }

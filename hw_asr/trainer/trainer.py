@@ -51,7 +51,7 @@ class Trainer(BaseTrainer):
             self.len_epoch = len_epoch
         self.evaluation_dataloaders = {k: v for k, v in dataloaders.items() if k != "train"}
         self.lr_scheduler = lr_scheduler
-        self.log_step = 50
+        self.log_step = 500
 
         self.train_metrics = MetricTracker(
             "loss", "grad norm", *[m.name for m in self.metrics if m.train], writer=self.writer
@@ -230,7 +230,7 @@ class Trainer(BaseTrainer):
         beam_search_texts = [None] * len(log_probs)
         if isinstance(self.text_encoder, CTCCharTextEncoder):
             beam_search_texts = [
-                self.text_encoder.ctc_beam_search(log_probs_item, probs_length_item, beam_size=20)
+                self.text_encoder.ctc_beam_search(log_probs_item, probs_length_item, beam_size=100)
                 for log_probs_item, probs_length_item in zip(log_probs, log_probs_length)
             ]
 

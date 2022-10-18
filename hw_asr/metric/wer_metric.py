@@ -33,7 +33,7 @@ class LMWerMetric(BaseMetric):
         super().__init__(*args, **kwargs)
         self.decoder = text_encoder.decoder
 
-    def __call__(self, log_probs: Tensor, log_probs_length: Tensor, text: List[str], beam_size: int = 20, **kwargs):
+    def __call__(self, log_probs: Tensor, log_probs_length: Tensor, text: List[str], beam_size: int = 100, **kwargs):
         wers = []
         probs = torch.exp(log_probs).cpu().detach().numpy()
         lengths = log_probs_length.cpu().detach().numpy()

@@ -15,11 +15,16 @@ class CTCLMCharTextEncoder(CTCCharTextEncoder):
         super().__init__(alphabet)
         chars = list(self.char2ind)
         chars[0] = ''
+
+        with open("./data/datasets/librispeech/librispeech-vocab.txt", "r") as f_in:
+            words = [line.strip().lower() for line in f_in]
+
         self.decoder = build_ctcdecoder(
             chars,
-            kenlm_model_path="./data/decoders/3-gram.pruned.1e-7.arpa",
+            kenlm_model_path="./data/decoders/processed-3-gram.pruned.1e-7.arpa",
             alpha=0.6,
             beta=0.0001,
+            unigrams=words,
         )
 
     def ctc_beam_search(self, log_probs: np.ndarray, probs_length: int,
