@@ -27,6 +27,6 @@ class CTCLMCharTextEncoder(CTCCharTextEncoder):
         )
 
     def ctc_beam_search(self, log_probs: np.ndarray, probs_length: int,
-                        beam_size: int = 20) -> List[Hypothesis]:
+                        beam_size: int = 10) -> List[Hypothesis]:
         result = self.decoder.decode_beams(log_probs, beam_width=beam_size)
         return [Hypothesis(text=t[0], prob=np.exp(t[-1])) for t in result]

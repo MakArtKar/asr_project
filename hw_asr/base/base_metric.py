@@ -54,7 +54,7 @@ class BaseLMMetric(BaseTextMetric, ABC):
             self,
             log_probs: torch.Tensor,
             log_probs_length: torch.Tensor,
-            beam_size: int = 20,
+            beam_size: int = 10,
             **kwargs
     ) -> List[str]:
         log_probs = log_probs.detach().cpu().numpy()

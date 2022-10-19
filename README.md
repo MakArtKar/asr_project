@@ -2,11 +2,25 @@
 
 ## Installation guide
 
-< Write your installation guide here >
+### Install packages
 
 ```shell
 pip install -r ./requirements.txt
 ```
+
+
+### Setup additional files
+
+```shell
+python setup.py --lm --librispeech_vocab --common_voice <YOUR TOKEN>
+```
+
+You can find how to access `<YOUR TOKEN>` [here](https://huggingface.co/docs/hub/security-tokens).
+
+* `--lm`: loads lm .arpa file to use WER/CER metrics with LM
+* `--librispeech_vocab`: loads librispeech vocab to pass to LM as parameter for better working
+* `--common-voice`: loads Common Voice dataset
+
 
 ## Recommended implementation order
 

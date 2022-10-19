@@ -32,7 +32,7 @@ class TestTextEncoder(unittest.TestCase):
                 probs_step[ind] = 1. / len(chars_step)
             probs.append(probs_step)
         probs = torch.tensor(probs)
-        beam_search_output = text_encoder.ctc_beam_search(probs, len(probs), beam_size=20)
+        beam_search_output = text_encoder.ctc_beam_search(probs, len(probs), beam_size=10)
 
         result = defaultdict(float)
         for mask in range(2 ** len(chars)):
