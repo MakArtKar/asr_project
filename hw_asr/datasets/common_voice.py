@@ -4,7 +4,6 @@ import torchaudio
 from datasets import load_dataset
 
 from hw_asr.base.base_dataset import BaseDataset
-from hw_asr.utils import ROOT_PATH
 
 
 class CommonVoice(BaseDataset):

@@ -80,6 +80,8 @@ class BaseDataset(Dataset):
             if self.spec_augs is not None:
                 audio_tensor_spec = self.spec_augs(audio_tensor_spec)
             if self.log_spec:
+                if audio_tensor_spec.min() < 0:
+                    raise ValueError(f"{audio_tensor_spec.min()=} < 0")
                 audio_tensor_spec = torch.log(audio_tensor_spec + 1e-5)
             return audio_tensor_wave, audio_tensor_spec
 

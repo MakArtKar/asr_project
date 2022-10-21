@@ -1,6 +1,7 @@
 from typing import List
 
 import numpy as np
+import torch
 from pyctcdecode import build_ctcdecoder
 
 from hw_asr.text_encoder import CTCCharTextEncoder
@@ -28,5 +29,8 @@ class CTCLMCharTextEncoder(CTCCharTextEncoder):
 
     def ctc_beam_search(self, log_probs: np.ndarray, probs_length: int,
                         beam_size: int = 10) -> List[Hypothesis]:
+        if isinstance(log_probs, torch.Tensor):
+            log_probs = log_probs.detach().cpu().numpy()
+        log_probs = log_probs[:probs_length]
         result = self.decoder.decode_beams(log_probs, beam_width=beam_size)
         return [Hypothesis(text=t[0], prob=np.exp(t[-1])) for t in result]

@@ -51,7 +51,7 @@ class Trainer(BaseTrainer):
             self.len_epoch = len_epoch
         self.evaluation_dataloaders = {k: v for k, v in dataloaders.items() if k != "train"}
         self.lr_scheduler = lr_scheduler
-        self.log_step = 200
+        self.log_step = 500
 
         self.train_metrics = MetricTracker(
             "loss", "grad norm", *[m.name for m in self.metrics if m.train], writer=self.writer
@@ -160,6 +160,12 @@ class Trainer(BaseTrainer):
             if is_train and met.name in self.train_metrics.keys() or \
                     not is_train and met.name in self.evaluation_metrics.keys():
                 metrics.update(met.name, met(**batch))
+
+        for tensor in self.model.state_dict().values():
+            if torch.isnan(tensor).sum() > 0:
+                torch.save(self.model, 'model.pt')
+                torch.save(batch, 'batch.pt')
+                raise ValueError('nans in model weights')
         return batch
 
     def _evaluation_epoch(self, epoch, part, dataloader):

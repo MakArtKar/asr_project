@@ -34,8 +34,6 @@ def main(config, out_file):
     logger.info("Loading checkpoint: {} ...".format(config.resume))
     checkpoint = torch.load(config.resume, map_location=device)
     state_dict = checkpoint["state_dict"]
-    if config["n_gpu"] > 1:
-        model = torch.nn.DataParallel(model)
     model.load_state_dict(state_dict)
 
     # prepare model for testing

@@ -43,18 +43,19 @@ class BaseLMMetric(BaseTextMetric, ABC):
             self,
             text_encoder: CTCLMCharTextEncoder,
             n_jobs: int = 1,
+            beam_size: int = 10,
             *args,
             **kwargs
     ):
         super().__init__(*args, **kwargs)
         self.decoder = text_encoder.decoder
         self.n_jobs = n_jobs
+        self.beam_size = beam_size
 
     def process_predicted_text(
             self,
             log_probs: torch.Tensor,
             log_probs_length: torch.Tensor,
-            beam_size: int = 10,
             **kwargs
     ) -> List[str]:
         log_probs = log_probs.detach().cpu().numpy()
@@ -65,6 +66,7 @@ class BaseLMMetric(BaseTextMetric, ABC):
             for log_prob, length in zip(log_probs, log_probs_length)
         ]
 
+        beam_size = self.beam_size
         with multiprocessing.get_context("fork").Pool(self.n_jobs) as pool:
             predicted_texts = self.decoder.decode_batch(pool, truncated_log_probs, beam_width=beam_size)
 
