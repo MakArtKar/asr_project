@@ -12,7 +12,7 @@ pip install -r ./requirements.txt
 ### Setup additional files
 
 ```shell
-python setup.py --lm --librispeech_vocab --common_voice <YOUR TOKEN>
+python setup.py --lm --librispeech_vocab --common_voice <YOUR TOKEN> --weights
 ```
 
 You can find how to access `<YOUR TOKEN>` [here](https://huggingface.co/docs/hub/security-tokens).
@@ -20,6 +20,7 @@ You can find how to access `<YOUR TOKEN>` [here](https://huggingface.co/docs/hub
 * `--lm`: loads lm .arpa file to use WER/CER metrics with LM
 * `--librispeech_vocab`: loads librispeech vocab to pass to LM as parameter for better working
 * `--common-voice`: loads Common Voice dataset
+* `--weights`: load weights in `pretrained/`
 
 
 ## Recommended implementation order
