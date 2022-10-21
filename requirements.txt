@@ -16,3 +16,4 @@ pyctcdecode~=0.4.0
 pillow~=9.2.0
 
 joblib~=1.2.0
+gdown

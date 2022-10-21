@@ -1,10 +1,13 @@
 import argparse
 import os
+import gdown
 
 
 links = {
     "librispeech vocab": "https://us.openslr.org/resources/11/librispeech-vocab.txt",
     "LM": "https://us.openslr.org/resources/11/3-gram.pruned.1e-7.arpa.gz",
+    "weights": "1QIE8FPybBY6KXkGR7XxGzx6lX7D3WPmh",
+    "config": "1SQoYr22GB9bsDc_FSsewLzRGyuKtLcFM",
 }
 
 
@@ -30,6 +33,12 @@ def setup_common_voice(token):
     load_dataset('mozilla-foundation/common_voice_11_0', 'en', use_auth_token=token)
 
 
+def setup_weights():
+    os.makedirs("pretrained/", exist_ok=True)
+    # gdown.download(id=links["weights"], output="pretrained/weights.pt")
+    gdown.download(id=links["config"], output="pretrained/config.json")
+
+
 def main(args):
     if args.librispeech_vocab:
         setup_librispeech_vocab()
@@ -37,6 +46,8 @@ def main(args):
         setup_lm()
     if args.common_voice:
         setup_common_voice(args.common_voice)
+    if args.weights:
+        setup_weights()
 
 
 if __name__ == "__main__":
@@ -44,5 +55,6 @@ if __name__ == "__main__":
     parser.add_argument('--lm', action="store_true", default=False, help="Download lm")
     parser.add_argument('--librispeech_vocab', action="store_true", default=False, help="Download librispeech vocab")
     parser.add_argument('--common_voice', type=str, default="", help="Download Common Voice dataset")
+    parser.add_argument('--weights', action="store_true", default=False, help="Download weights")
     args = parser.parse_args()
     main(args)
