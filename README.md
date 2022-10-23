@@ -23,6 +23,46 @@ You can find how to access `<YOUR TOKEN>` [here](https://huggingface.co/docs/hub
 * `--weights`: load weights in `pretrained/`
 
 
+## Reproduce results
+
+After installation you can find weights and config for testing in `pretrained/` dir. To reproduce results run consistently train with configs `deep_speech2_train1.json` and `deep_speech2_train2.json`
+
+```shell
+python train.py --config hw_asr/configs/deep_speech2_train1.json
+python train.py --config hw_asr/configs/deep_speech2.json --resume saved/models/deep_speech2/<PREVIOUS TRAIN1 RUN>/<BEST CHECKPOINT>.pt
+```
+
+To get WER and CER best results (while training we logged only `beam_size = 10`) - run
+
+```shell
+python train.py --config hw_asr/configs/deep_speech2_test.json --resume saved/models/deep_speech2/<PREVIOUS TRAIN2 RUN>/<BEST CHECKPOINT>.pt
+```
+
+or
+
+```shell
+python train.py --config hw_asr/configs/deep_speech2_test.json --resume pretrained/weights.pt
+```
+
+PLEASE, customize your gpu number and gpu device.
+
+## Logs
+
+[train1](https://wandb.ai/makartkar/asr_project/runs/2gsp569i/logs?workspace=user-makartkar), [train2](https://wandb.ai/makartkar/asr_project/runs/2jylbz2f/logs?workspace=user-makartkar) and [test](https://wandb.ai/makartkar/asr_project/runs/2cughmle/logs?workspace=user-makartkar)
+
+## Training strategy
+
+* Deep Speech 2 architecture
+* 2400 steps with LR scheduler (train 1), 2400 steps with LR scheduler wit `pct_start=1%` (basically that means no scheduler)
+* LM for finer WER and CER results. Added unigrams from librispeech site (`data/datasets/librispeech/librispeech-vocab.txt`)
+* Added common voice dataset, but got null weights while training (couldn't find the problem)
+* Added wave augmentations
+* Implemented beam search but used faster kenlm with automatic LM support
+
+## Bonuses
+
+* Added LM (+0.5 points)
+
 ## Recommended implementation order
 
 You might be a little intimidated by the number of folders and classes. Try to follow this steps to gradually undestand

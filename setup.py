@@ -19,7 +19,7 @@ def setup_librispeech_vocab():
 
 def setup_lm():
     os.makedirs("./data/decoders/", exist_ok=True)
-    os.system(f"wget {'LM'} -P ./data/decoders")
+    os.system(f"wget {links['LM']} -P ./data/decoders")
     os.system("gzip -d ./data/decoders/3-gram.pruned.1e-7.arpa.gz")
 
     with open("./data/decoders/3-gram.pruned.1e-7.arpa", "r") as f_in, \
@@ -35,7 +35,7 @@ def setup_common_voice(token):
 
 def setup_weights():
     os.makedirs("pretrained/", exist_ok=True)
-    # gdown.download(id=links["weights"], output="pretrained/weights.pt")
+    gdown.download(id=links["weights"], output="pretrained/weights.pt")
     gdown.download(id=links["config"], output="pretrained/config.json")
 
 
